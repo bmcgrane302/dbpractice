@@ -5,7 +5,23 @@ module.exports = {
   index: function(req, res){
     knex('companies').then((companyList)=>{
 
-      res.render('index', {companies: companyList});
+       if(req.session.admin){
+         knex('admin')
+         .where('id', req.session.admin)
+         .then((result)=>{
+           let logged_user = result[0];
+
+           res.render('index', {companies: companyList, user: logged_user});
+         })
+       } else {
+         knex('users')
+         .where('id', req.session.user)
+         .then((result)=> {
+           let logged_user = result[0];
+
+           res.render('index', {companies: companyList, user: logged_user});
+         })
+       }
     })
   },
 

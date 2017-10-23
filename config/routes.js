@@ -1,20 +1,47 @@
 //routes
-const company = require("../controllers/company.js")
-const member = require("../controllers/member.js")
-
+const company = require("../controllers/company.js");
+const member = require("../controllers/member.js");
+const admin = require("../controllers/admin.js");
+const users = require("../controllers/users.js");
 module.exports = function(app){
 
+  app.get('/users/login', users.login);
+
+  app.post('/users/login', users.check);
+
+  app.post('/users/register', users.register);
+
+
+  app.get('/login', admin.login);
+
+  app.post('/login', admin.check);
+
+  //everything below this is protected
+  app.use(userAuth);
 
   app.get('/', company.index);
 
   app.get('/company/:id', company.getOne);
 
+  app.use(adminAuth);
+
+  app.post('/member/:co_id', member.create);
+
   app.post('/company', company.create);
+}
 
-  app.post('/member/:co_id', member.create );
+function userAuth(req, res, next){
+  if(req.session.user || req.session.admin){
+    next();
+  }else{
+    res.redirect("/users/login")
+  }
+}
 
-  app.use(function(res, req){
-
-    res.render('.error');
-  })
+function adminAuth(req,res,next){
+  if(req.session.admin){
+    next();
+  }else{
+    res.redirect('/login');
+  }
 }
